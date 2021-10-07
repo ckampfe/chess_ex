@@ -46,6 +46,7 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
     this.position
   end
 
+  # TODO: add check for ability for pawn to move double from the first row
   # TODO: add check for en passant
   def moves(this, board) do
     case color(this) do
