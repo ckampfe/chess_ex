@@ -72,8 +72,8 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
           Position.up_right(this.position)
         ]
     end
-    |> Enum.filter(fn move ->
-      !MapSet.member?(same_color_piece_positions, move)
+    |> Enum.reject(fn move ->
+      MapSet.member?(same_color_piece_positions, move)
     end)
     |> Enum.into(MapSet.new())
   end
@@ -321,8 +321,8 @@ defimpl Chess.Piece, for: Chess.Pieces.King do
       Position.up_left(this.position)
     ]
     |> Enum.reject(fn position -> Position.to_xy(position) == :off_board end)
-    |> Enum.filter(fn move ->
-      !MapSet.member?(same_color_piece_positions, move)
+    |> Enum.reject(fn move ->
+      MapSet.member?(same_color_piece_positions, move)
     end)
     |> Enum.into(MapSet.new())
   end
