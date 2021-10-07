@@ -28,41 +28,108 @@ defmodule Chess.Position do
     }
   end
 
+  def to_xy(%__MODULE__{repr: :off_board}) do
+    :off_board
+  end
+
   def to_xy(this) do
     x = :erlang.rem(this.repr, 8)
     y = :erlang.div(this.repr, 8)
     {x, y}
   end
 
-  def up(this) do
-    %{this | repr: this.repr + 8}
+  # maybe?
+  #
+  # defmacro stream(this, move_direction) do
+  #   quote do
+  #     Stream.iterate(unquote(this), fn position ->
+  #       Chess.Position.unquote(move_direction)(position)
+  #       # apply(__MODULE__, move_direction, [position])
+  #     end)
+  #     |> Stream.drop(1)
+  #   end
+  # end
+
+  def stream(this, move_direction) do
+    Stream.iterate(this, fn position ->
+      apply(__MODULE__, move_direction, [position])
+    end)
+    |> Stream.drop(1)
   end
+
+  def compose(moves) do
+    fn starting_position ->
+      Enum.reduce(moves, starting_position, fn move, position ->
+        apply(__MODULE__, move, [position])
+      end)
+    end
+  end
+
+  def up(%__MODULE__{repr: :off_board} = this), do: this
+
+  def up(this) do
+    if this.repr + 8 > 63 do
+      %{this | repr: :off_board}
+    else
+      %{this | repr: this.repr + 8}
+    end
+  end
+
+  def down(%__MODULE__{repr: :off_board} = this), do: this
 
   def down(this) do
-    %{this | repr: this.repr - 8}
+    if this.repr - 8 < 0 do
+      %{this | repr: :off_board}
+    else
+      %{this | repr: this.repr - 8}
+    end
   end
+
+  def left(%__MODULE__{repr: :off_board} = this), do: this
 
   def left(this) do
-    %{this | repr: this.repr - 1}
+    if crosses_row_boundary?(this.repr, this.repr - 1) || this.repr - 1 < 0 do
+      %{this | repr: :off_board}
+    else
+      %{this | repr: this.repr - 1}
+    end
   end
 
+  def right(%__MODULE__{repr: :off_board} = this), do: this
+
   def right(this) do
-    %{this | repr: this.repr + 1}
+    if crosses_row_boundary?(this.repr, this.repr + 1) || this.repr + 1 > 63 do
+      %{this | repr: :off_board}
+    else
+      %{this | repr: this.repr + 1}
+    end
   end
+
+  def up_right(%__MODULE__{repr: :off_board} = this), do: this
 
   def up_right(this) do
     this |> up() |> right()
   end
 
+  def up_left(%__MODULE__{repr: :off_board} = this), do: this
+
   def up_left(this) do
     this |> up() |> left()
   end
+
+  def down_right(%__MODULE__{repr: :off_board} = this), do: this
 
   def down_right(this) do
     this |> down() |> right()
   end
 
+  def down_left(%__MODULE__{repr: :off_board} = this), do: this
+
   def down_left(this) do
     this |> down() |> left()
+  end
+
+  defp crosses_row_boundary?(previous, next) do
+    :erlang.div(previous, 8) != :erlang.div(next, 8)
   end
 end
