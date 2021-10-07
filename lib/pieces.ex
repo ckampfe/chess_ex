@@ -49,6 +49,14 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
   # TODO: add check for ability for pawn to move double from the first row
   # TODO: add check for en passant
   def moves(this, board) do
+    same_color_piece_positions =
+      board.pieces
+      |> Enum.filter(fn piece ->
+        piece.color == color(this)
+      end)
+      |> Enum.map(&position(&1))
+      |> Enum.into(MapSet.new())
+
     case color(this) do
       :black ->
         [
@@ -65,14 +73,6 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
         ]
     end
     |> Enum.filter(fn move ->
-      same_color_piece_positions =
-        board.pieces
-        |> Enum.filter(fn piece ->
-          piece.color == color(this)
-        end)
-        |> Enum.map(&position(&1))
-        |> Enum.into(MapSet.new())
-
       !MapSet.member?(same_color_piece_positions, move)
     end)
     |> Enum.into(MapSet.new())
@@ -302,6 +302,14 @@ defimpl Chess.Piece, for: Chess.Pieces.King do
 
   # TODO: add check for moving into check
   def moves(this, board) do
+    same_color_piece_positions =
+      board.pieces
+      |> Enum.filter(fn piece ->
+        piece.color == color(this)
+      end)
+      |> Enum.map(&position(&1))
+      |> Enum.into(MapSet.new())
+
     [
       Position.up(this.position),
       Position.up_right(this.position),
@@ -314,14 +322,6 @@ defimpl Chess.Piece, for: Chess.Pieces.King do
     ]
     |> Enum.reject(fn position -> Position.to_xy(position) == :off_board end)
     |> Enum.filter(fn move ->
-      same_color_piece_positions =
-        board.pieces
-        |> Enum.filter(fn piece ->
-          piece.color == color(this)
-        end)
-        |> Enum.map(&position(&1))
-        |> Enum.into(MapSet.new())
-
       !MapSet.member?(same_color_piece_positions, move)
     end)
     |> Enum.into(MapSet.new())
