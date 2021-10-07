@@ -15,7 +15,7 @@ defmodule Chess.Pieces do
   end
 
   defmodule Rook do
-    defstruct [:position, :color]
+    defstruct [:color, :position]
   end
 
   defmodule Knight do
