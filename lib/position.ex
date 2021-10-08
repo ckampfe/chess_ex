@@ -33,8 +33,8 @@ defmodule Chess.Position do
   end
 
   def to_xy(this) do
-    x = :erlang.rem(this.repr, 8)
-    y = :erlang.div(this.repr, 8)
+    x = Kernel.rem(this.repr, 8)
+    y = Kernel.div(this.repr, 8)
     {x, y}
   end
 
@@ -130,6 +130,6 @@ defmodule Chess.Position do
   end
 
   defp crosses_row_boundary?(previous, next) do
-    :erlang.div(previous, 8) != :erlang.div(next, 8)
+    Kernel.div(previous, 8) != Kernel.div(next, 8)
   end
 end

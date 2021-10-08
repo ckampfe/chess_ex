@@ -98,7 +98,7 @@ defmodule Chess.Board do
                 Chess.Piece.to_string(piece)
 
               :error ->
-                if :erlang.rem(x + y, 2) != 0 do
+                if Kernel.rem(x + y, 2) != 0 do
                   dark_box
                 else
                   space
