@@ -1,5 +1,7 @@
 # Chess
 
+[![Elixir CI](https://github.com/ckampfe/chess/actions/workflows/elixir.yml/badge.svg)](https://github.com/ckampfe/chess/actions/workflows/elixir.yml)
+
 ```
 iex(65)> Chess.Board.default() |> Chess.Board.to_string() |> IO.puts
 ┌───────────────────────────────┐
