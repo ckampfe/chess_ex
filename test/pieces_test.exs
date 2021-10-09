@@ -11,7 +11,7 @@ defmodule PiecesTest do
 
       assert MapSet.equal?(
                Piece.moves(pawn_b, board) |> Enum.map(&Position.to_xy(&1)) |> MapSet.new(),
-               MapSet.new([{4, 5}, {3, 5}, {5, 5}])
+               MapSet.new([{4, 5}, {4, 4}, {3, 5}, {5, 5}])
              )
 
       pawn_w = %Pawn{color: :white, position: Position.new(4, 6)}
@@ -43,6 +43,15 @@ defmodule PiecesTest do
       assert MapSet.equal?(
                Piece.moves(pawn_w, board2) |> Enum.map(&Position.to_xy(&1)) |> MapSet.new(),
                MapSet.new([{4, 7}, {3, 7}])
+             )
+
+      board3 = %Board{pieces: [Pieces.new(Pawn, :white, Position.new(4, 3))]}
+
+      pawn_w2 = %Pawn{color: :white, position: Position.new(4, 1)}
+
+      assert MapSet.equal?(
+               Piece.moves(pawn_w2, board3) |> Enum.map(&Position.to_xy(&1)) |> MapSet.new(),
+               MapSet.new([{4, 2}, {3, 2}, {5, 2}])
              )
     end
 

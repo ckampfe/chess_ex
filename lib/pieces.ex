@@ -46,16 +46,27 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
     this.position
   end
 
-  # TODO: add check for ability for pawn to move double from the first row
   # TODO: add check for en passant
   def moves(this, board) do
+    all_piece_positions =
+      board.pieces
+      |> Enum.map(&Chess.Piece.position(&1))
+      |> Enum.into(MapSet.new())
+
     same_color_piece_positions =
       board.pieces
       |> Enum.filter(fn piece ->
         piece.color == color(this)
       end)
-      |> Enum.map(&position(&1))
+      |> Enum.map(&Chess.Piece.position(&1))
       |> Enum.into(MapSet.new())
+
+    in_home_row? =
+      case {color(this), Position.to_xy(this.position)} do
+        {:white, {_, 1}} -> true
+        {:black, {_, 6}} -> true
+        _ -> false
+      end
 
     case color(this) do
       :black ->
@@ -63,14 +74,32 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
           Position.down(this.position),
           Position.down_left(this.position),
           Position.down_right(this.position)
-        ]
+        ] ++
+          if in_home_row? do
+            [Position.compose([:down, :down]).(this.position)]
+            |> Enum.reject(fn move ->
+              MapSet.member?(all_piece_positions, move) ||
+                MapSet.member?(all_piece_positions, Position.down(this.position))
+            end)
+          else
+            []
+          end
 
       :white ->
         [
           Position.up(this.position),
           Position.up_left(this.position),
           Position.up_right(this.position)
-        ]
+        ] ++
+          if in_home_row? do
+            [Position.compose([:up, :up]).(this.position)]
+            |> Enum.reject(fn move ->
+              MapSet.member?(all_piece_positions, move) ||
+                MapSet.member?(all_piece_positions, Position.up(this.position))
+            end)
+          else
+            []
+          end
     end
     |> Enum.reject(fn move ->
       MapSet.member?(same_color_piece_positions, move)
@@ -153,7 +182,7 @@ defimpl Chess.Piece, for: Chess.Pieces.Knight do
       |> Enum.filter(fn piece ->
         Chess.Piece.color(piece) == color(this)
       end)
-      |> Enum.map(&position(&1))
+      |> Enum.map(&Chess.Piece.position(&1))
       |> Enum.into(MapSet.new())
 
     [
@@ -307,7 +336,7 @@ defimpl Chess.Piece, for: Chess.Pieces.King do
       |> Enum.filter(fn piece ->
         piece.color == color(this)
       end)
-      |> Enum.map(&position(&1))
+      |> Enum.map(&Chess.Piece.position(&1))
       |> Enum.into(MapSet.new())
 
     [
