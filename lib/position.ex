@@ -28,6 +28,10 @@ defmodule Chess.Position do
     }
   end
 
+  def from({x, y}) when x >= 0 and x < 8 and y >= 0 and y < 8 do
+    new(x, y)
+  end
+
   def to_xy(%__MODULE__{repr: :off_board}) do
     :off_board
   end

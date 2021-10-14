@@ -48,11 +48,6 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
 
   # TODO: add check for en passant
   def moves(this, board) do
-    all_piece_positions =
-      board.pieces
-      |> Enum.map(&Chess.Piece.position(&1))
-      |> Enum.into(MapSet.new())
-
     same_color_piece_positions =
       board.pieces
       |> Enum.filter(fn piece ->
@@ -60,6 +55,16 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
       end)
       |> Enum.map(&Chess.Piece.position(&1))
       |> Enum.into(MapSet.new())
+
+    opposite_color_piece_positions =
+      board.pieces
+      |> Enum.reject(fn piece ->
+        piece.color == color(this)
+      end)
+      |> Enum.map(&Chess.Piece.position(&1))
+      |> Enum.into(MapSet.new())
+
+    all_piece_positions = MapSet.union(same_color_piece_positions, opposite_color_piece_positions)
 
     in_home_row? =
       case {color(this), Position.to_xy(this.position)} do
@@ -70,11 +75,24 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
 
     case color(this) do
       :black ->
-        [
-          Position.down(this.position),
-          Position.down_left(this.position),
-          Position.down_right(this.position)
-        ] ++
+        straight =
+          [
+            Position.down(this.position)
+          ]
+          |> Enum.reject(fn position ->
+            MapSet.member?(all_piece_positions, position)
+          end)
+
+        takes =
+          [
+            Position.down_left(this.position),
+            Position.down_right(this.position)
+          ]
+          |> Enum.filter(fn position ->
+            MapSet.member?(opposite_color_piece_positions, position)
+          end)
+
+        special =
           if in_home_row? do
             [Position.compose([:down, :down]).(this.position)]
             |> Enum.reject(fn move ->
@@ -85,12 +103,27 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
             []
           end
 
+        straight ++ takes ++ special
+
       :white ->
-        [
-          Position.up(this.position),
-          Position.up_left(this.position),
-          Position.up_right(this.position)
-        ] ++
+        straight =
+          [
+            Position.up(this.position)
+          ]
+          |> Enum.reject(fn position ->
+            MapSet.member?(all_piece_positions, position)
+          end)
+
+        takes =
+          [
+            Position.up_left(this.position),
+            Position.up_right(this.position)
+          ]
+          |> Enum.filter(fn position ->
+            MapSet.member?(opposite_color_piece_positions, position)
+          end)
+
+        special =
           if in_home_row? do
             [Position.compose([:up, :up]).(this.position)]
             |> Enum.reject(fn move ->
@@ -100,6 +133,8 @@ defimpl Chess.Piece, for: Chess.Pieces.Pawn do
           else
             []
           end
+
+        straight ++ takes ++ special
     end
     |> Enum.reject(fn move ->
       MapSet.member?(same_color_piece_positions, move)
@@ -330,6 +365,7 @@ defimpl Chess.Piece, for: Chess.Pieces.King do
   end
 
   # TODO: add check for moving into check
+  # TODO: add castling
   def moves(this, board) do
     same_color_piece_positions =
       board.pieces
