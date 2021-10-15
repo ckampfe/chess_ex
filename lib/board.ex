@@ -1,6 +1,8 @@
 defmodule Chess.Board do
   defstruct [:pieces]
 
+  require Integer
+
   def default() do
     %__MODULE__{
       pieces:
@@ -92,13 +94,13 @@ defmodule Chess.Board do
     piece_rows =
       for y <- 7..0 do
         row =
-          for x <- 7..0 do
+          for x <- 0..7 do
             case Map.fetch(indexed, {x, y}) do
               {:ok, piece} ->
                 Chess.Piece.to_string(piece)
 
               :error ->
-                if Kernel.rem(x + y, 2) != 0 do
+                if Integer.is_even(x + y) do
                   dark_box
                 else
                   space
